@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\ProfileController;
+use App\Models\Appointment;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -16,7 +17,13 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    $appointments = Appointment::all();
+
+    $appointments->load('appointmentDay');
+
+    return Inertia::render('Dashboard', [
+        'appointments' => $appointments,
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -28,9 +35,7 @@ Route::middleware('auth')->group(function () {
 
     Route::group(['prefix' => 'appointments', 'as' => 'appointments.'], function () {
         Route::get('/', [AppointmentController::class, 'index'])->name('index');
-        Route::get('/create', [AppointmentController::class, 'create'])->name('create');
         Route::post('/', [AppointmentController::class, 'store'])->name('store');
-        Route::get('/{appointment}/edit', [AppointmentController::class, 'edit'])->name('edit');
         Route::patch('/{appointment}', [AppointmentController::class, 'update'])->name('update');
         Route::delete('/{appointment}', [AppointmentController::class, 'destroy'])->name('destroy');
     });

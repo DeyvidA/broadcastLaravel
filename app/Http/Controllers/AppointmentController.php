@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AppointmentDay;
 use App\Models\Appointment;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -32,7 +34,22 @@ class AppointmentController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        request()->validate([
+            'appointmentDate' => ['required', 'date'],
+            'appointmentTime' => ['required', 'string'],
+        ]);
+
+        $appointmentDay = AppointmentDay::firstOrCreate([
+            'date' => Carbon::parse(request('appointmentDate'))->format('Y-m-d'),
+        ]);
+
+        Appointment::firstOrCreate([
+            'user_id' => auth()->id(),
+            'appointment_day_id' => $appointmentDay->id,
+            'time' => request('appointmentTime')
+        ]);
+
+        return redirect('/dashboard')->with('success', 'Appointment created!');
     }
 
     /**

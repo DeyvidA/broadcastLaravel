@@ -16,15 +16,7 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    $appointments = Appointment::all();
-
-    $appointments->load('appointmentDay');
-
-    return Inertia::render('Dashboard', [
-        'appointments' => $appointments,
-    ]);
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [AppointmentController::class, 'dashboard'])->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::group(['prefix' => 'profile', 'as' => 'profile.'], function () {

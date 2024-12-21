@@ -1,6 +1,6 @@
 import { Calendar } from '@/components/ui/calendar';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.jsx';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePoll } from '@inertiajs/react';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import isToday from 'dayjs/plugin/isToday';
@@ -30,6 +30,8 @@ const initialDailySlots = [
 ];
 
 export default function Index({ appointmentDays }) {
+    usePoll(10000);
+
     const { data, setData, post } = useForm({
         appointmentTime: '',
         appointmentDate: new Date(dayjs()),
@@ -52,48 +54,32 @@ export default function Index({ appointmentDays }) {
                 return appointmentDate.isSame(dataAppointmentDate);
             },
         );
+        const selectedDaySlot = initialDailySlots.filter((slot) => {
+            const currentTime = dayjs();
+            const slotTime = dayjs(slot.slot, 'HH:mm:ss');
 
-        const selectedDaySlot = [...initialDailySlots].filter((slot) => {
-            const currentMinute = dayjs().minute();
-            const currentHour = dayjs().hour();
-            const validationForTodayHoursAlreadyPassed =
-                dayjs(slot.slot, 'HH:mm:ss').hour() < currentHour ||
-                (dayjs(slot.slot, 'HH:mm:ss').hour() === currentHour &&
-                    dayjs(slot.slot, 'HH:mm:ss').minute() < currentMinute);
+            const isPastTodayTime = slotTime.isBefore(currentTime, 'minute');
+
+            const hasAppointments =
+                appointmentsInTheSelectedDay?.appointment?.length > 0;
+            const isToday = dayjs(appointmentsInTheSelectedDay?.date).isToday();
 
             if (appointmentsInTheSelectedDay) {
-                console.log('you', appointmentsInTheSelectedDay.appointment);
-
-                if (appointmentsInTheSelectedDay.appointment.length > 0) {
+                if (hasAppointments) {
                     return !appointmentsInTheSelectedDay.appointment.some(
                         (appointment) => {
-                            if (
-                                dayjs(
-                                    appointmentsInTheSelectedDay.date,
-                                ).isToday() &&
-                                validationForTodayHoursAlreadyPassed
-                            ) {
-                                return true;
-                            }
-                            return appointment.time === slot.slot;
+                            return (
+                                (isToday && isPastTodayTime) ||
+                                appointment.time === slot.slot
+                            );
                         },
                     );
-                } else {
-                    if (
-                        dayjs(appointmentsInTheSelectedDay.date).isToday() &&
-                        validationForTodayHoursAlreadyPassed
-                    ) {
-                        return false;
-                    }
-
-                    return true;
                 }
+
+                return !(isToday && isPastTodayTime);
             }
 
-            if (
-                dayjs(data.appointmentDate).isToday() &&
-                validationForTodayHoursAlreadyPassed
-            ) {
+            if (dayjs(data.appointmentDate).isToday() && isPastTodayTime) {
                 return false;
             }
 
@@ -136,6 +122,11 @@ export default function Index({ appointmentDays }) {
                             />
 
                             <div className="flex max-h-[500px] w-full flex-col gap-1 overflow-auto">
+                                {dailySlots.length === 0 && (
+                                    <div className="h-100% self-center text-center text-red-500">
+                                        No available slots
+                                    </div>
+                                )}
                                 {dailySlots.map((item) => (
                                     <button
                                         key={item.slot}
@@ -159,7 +150,7 @@ export default function Index({ appointmentDays }) {
                             className="w-full bg-blue-950 p-6 text-white"
                             onClick={handleForm}
                         >
-                            Test
+                            Create Appointment
                         </button>
                     </div>
                 </div>

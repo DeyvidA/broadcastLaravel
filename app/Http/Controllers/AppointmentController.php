@@ -22,6 +22,18 @@ class AppointmentController extends Controller
         ]);
     }
 
+    public function dashboard()
+    {
+        $appointments = Appointment::query()
+            ->where('user_id', auth()->id())
+            ->with('appointmentDay')
+            ->get();
+
+        return Inertia::render('Dashboard', [
+            'appointments' => $appointments,
+        ]);
+    }
+
     /**
      * Show the form for creating a new resource.
      */

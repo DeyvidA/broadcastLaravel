@@ -32,8 +32,8 @@ const initialDailySlots = [
 export default function Index({ appointmentDays }) {
     usePoll(10000);
 
-    const { data, setData, post } = useForm({
-        appointmentTime: '',
+    const { data, setData, post, errors, processing } = useForm({
+        appointmentTime: null,
         appointmentDate: new Date(dayjs()),
     });
 
@@ -146,11 +146,27 @@ export default function Index({ appointmentDays }) {
                                 ))}
                             </div>
                         </div>
+                        {errors.appointmentDate && (
+                            <div className="bg-red-500 p-4 text-center text-white">
+                                {errors.appointmentDate}
+                            </div>
+                        )}
+
+                        {errors.appointmentTime && (
+                            <div className="bg-red-500 p-4 text-center text-white">
+                                {errors.appointmentTime}
+                            </div>
+                        )}
                         <button
-                            className="w-full bg-blue-950 p-6 text-white"
+                            className="disabled: w-full rounded-lg bg-blue-950 p-6 font-semibold text-white hover:bg-blue-900 disabled:opacity-40"
                             onClick={handleForm}
+                            disabled={
+                                !data.appointmentDate ||
+                                !data.appointmentTime ||
+                                processing
+                            }
                         >
-                            Create Appointment
+                            {processing ? 'Loading...' : 'Book Appointment'}
                         </button>
                     </div>
                 </div>

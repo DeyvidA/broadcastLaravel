@@ -82,6 +82,8 @@ class AppointmentController extends Controller
      */
     public function destroy(Appointment $appointment)
     {
-        //
+        $appointment->delete();
+
+        return redirect('/dashboard')->with('success', 'Appointment deleted!');
     }
 }

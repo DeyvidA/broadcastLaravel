@@ -49,16 +49,10 @@ export default function Index({ appointmentDays }) {
             },
         );
 
-        console.log(appointmentsInTheSelectedDay);
-
         const selectedDaySlot = [...initialDailySlots].filter((slot) => {
             if (appointmentsInTheSelectedDay) {
                 return !appointmentsInTheSelectedDay.appointment.some(
                     (appointment) => {
-                        console.log(
-                            'dentro del include',
-                            appointment.time === slot.slot,
-                        );
                         return appointment.time === slot.slot;
                     },
                 );

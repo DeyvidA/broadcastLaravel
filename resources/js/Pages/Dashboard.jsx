@@ -1,8 +1,13 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 
 export default function Dashboard({ appointments }) {
-    console.log(appointments);
+    const form = useForm();
+
+    const handleCancel = (id) => {
+        form.delete(route('appointments.destroy', id));
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -37,7 +42,12 @@ export default function Dashboard({ appointments }) {
                                                 {appointment?.time}
                                             </p>
                                         </div>
-                                        <button className="rounded-lg bg-red-500 px-4 py-2 text-white">
+                                        <button
+                                            className="rounded-lg bg-red-500 px-4 py-2 text-white"
+                                            onClick={() =>
+                                                handleCancel(appointment.id)
+                                            }
+                                        >
                                             Cancel
                                         </button>
                                     </div>

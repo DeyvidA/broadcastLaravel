@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head , Link} from "@inertiajs/vue3";
-import {  ref } from "vue";
+import { Head, Link } from "@inertiajs/vue3";
+import { ref } from "vue";
 import Pusher from "pusher-js";
 
 const props = defineProps({
@@ -14,18 +14,19 @@ const props = defineProps({
 const userData = ref(props.users);
 
 //setup pusher
-const pusher = new Pusher("25047a04b992721e3317", {
-    cluster: "us2",
+
+const pusherAppKey = import.meta.env.VITE_PUSHER_APP_KEY;
+const pusherAppCluster = import.meta.env.VITE_PUSHER_APP_CLUSTER;
+
+const pusher = new Pusher(pusherAppKey, {
+    cluster: pusherAppCluster,
 });
 
 const channel = pusher.subscribe("user-status");
 
 channel.bind("user-status", (data) => {
     console.log(data);
-
 });
-
-
 </script>
 
 <template>
@@ -69,7 +70,6 @@ channel.bind("user-status", (data) => {
                                     >
                                         Actions
                                     </th>
-
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -93,9 +93,16 @@ channel.bind("user-status", (data) => {
                                             {{ user.status }}
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <td
+                                        class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+                                    >
                                         <Link
-                                            :href="route('user.updateUser', user.id)"
+                                            :href="
+                                                route(
+                                                    'user.updateUser',
+                                                    user.id
+                                                )
+                                            "
                                             class="text-indigo-600 hover:text-indigo-900"
                                         >
                                             Edit

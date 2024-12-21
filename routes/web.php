@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Models\User;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -15,8 +16,20 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    $users = User::all();
+
+    return Inertia::render('Dashboard',
+        ['users' => $users]
+    );
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/users/create', [ProfileController::class, 'create'])->name('user.create');
+    Route::get('/users/edit/{id}', [ProfileController::class, 'editUser'])->name('user.edit');
+    Route::post('/users', [ProfileController::class, 'store'])->name('user.store');
+    Route::patch('/users/edit/{id}', [ProfileController::class, 'updateUser'])->name('user.updateUser');
+
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -1,36 +1,75 @@
 import { Calendar } from '@/components/ui/calendar';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.jsx';
 import { Head, useForm } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 
-export default function Index({ appointment }) {
+const initialDailySlots = [
+    { slot: '09:00:00' },
+    { slot: '09:30:00' },
+    { slot: '10:00:00' },
+    { slot: '10:30:00' },
+    { slot: '11:00:00' },
+    { slot: '11:30:00' },
+    { slot: '12:00:00' },
+    { slot: '12:30:00' },
+    { slot: '13:00:00' },
+    { slot: '13:30:00' },
+    { slot: '14:00:00' },
+    { slot: '14:30:00' },
+    { slot: '15:00:00' },
+    { slot: '15:30:00' },
+    { slot: '16:00:00' },
+    { slot: '16:30:00' },
+    { slot: '17:00:00' },
+];
+
+export default function Index({ appointmentDays }) {
     const { data, setData, post } = useForm({
         appointmentTime: '',
         appointmentDate: new Date(),
     });
 
+    const [dailySlots, setDailySlots] = useState(initialDailySlots);
+
     const handleForm = () => {
         post(route('appointments.store'));
     };
 
-    const dailySlots = [
-        { slot: '9:00', isAvailable: true },
-        { slot: '9:30', isAvailable: true },
-        { slot: '10:00', isAvailable: true },
-        { slot: '10:30', isAvailable: true },
-        { slot: '11:00', isAvailable: true },
-        { slot: '11:30', isAvailable: true },
-        { slot: '12:00', isAvailable: true },
-        { slot: '12:30', isAvailable: true },
-        { slot: '13:00', isAvailable: true },
-        { slot: '13:30', isAvailable: true },
-        { slot: '14:00', isAvailable: true },
-        { slot: '14:30', isAvailable: true },
-        { slot: '15:00', isAvailable: true },
-        { slot: '15:30', isAvailable: true },
-        { slot: '16:00', isAvailable: true },
-        { slot: '16:30', isAvailable: true },
-        { slot: '17:00', isAvailable: true },
-    ];
+    useEffect(() => {
+        const appointmentsInTheSelectedDay = [...appointmentDays].find(
+            (appointment) => {
+                const appointmentDate = new Date(appointment.date)
+                    .toISOString()
+                    .split('T')[0];
+                const dataAppointmentDate = new Date(data.appointmentDate)
+                    .toISOString()
+                    .split('T')[0];
+
+                return appointmentDate === dataAppointmentDate;
+            },
+        );
+
+        console.log(appointmentsInTheSelectedDay);
+
+        const selectedDaySlot = [...initialDailySlots].filter((slot) => {
+            if (appointmentsInTheSelectedDay) {
+                return !appointmentsInTheSelectedDay.appointment.some(
+                    (appointment) => {
+                        console.log(
+                            'dentro del include',
+                            appointment.time === slot.slot,
+                        );
+                        return appointment.time === slot.slot;
+                    },
+                );
+            }
+
+            return slot;
+        });
+
+        setDailySlots(selectedDaySlot);
+    }, [data.appointmentDate, appointmentDays]);
+
     return (
         <AuthenticatedLayout
             header={
@@ -39,7 +78,7 @@ export default function Index({ appointment }) {
                 </h2>
             }
         >
-            <Head title="Appoiments" />
+            <Head title="Appointment" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">

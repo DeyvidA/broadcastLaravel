@@ -20,11 +20,11 @@ export default function Dashboard({ appointments }) {
                             <h2 className="text-xl font-semibold leading-tight text-gray-800">
                                 Appointments
                             </h2>
-                            <div className="mt-4 flex gap-8">
+                            <div className="mt-4 flex flex-wrap gap-8">
                                 {appointments.map((appointment) => (
                                     <div
                                         key={appointment.id}
-                                        className="mt-4 flex w-fit items-center justify-between gap-8 rounded-lg bg-gray-100 p-4"
+                                        className="mt-4 flex items-center justify-between gap-8 rounded-lg bg-gray-100 p-4"
                                     >
                                         <div>
                                             <h3 className="text-lg font-semibold">

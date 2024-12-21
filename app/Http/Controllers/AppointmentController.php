@@ -13,7 +13,10 @@ class AppointmentController extends Controller
      */
     public function index()
     {
-
+        $appointments = Appointment::all();
+        return Inertia::render('Appointments/Index', [
+            'appointments' => $appointments
+        ]);
     }
 
     /**

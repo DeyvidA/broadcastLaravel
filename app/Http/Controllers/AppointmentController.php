@@ -35,9 +35,9 @@ class AppointmentController extends Controller
      */
     public function store(Request $request)
     {
-        request()->validate([
-            'appointmentDate' => ['required', 'date'],
-            'appointmentTime' => ['required', 'string'],
+        $request->validate([
+            'appointmentDate' => 'required|date|after_or_equal:today',
+            'appointmentTime' => 'required',
         ]);
 
         $appointmentDay = AppointmentDay::firstOrCreate([

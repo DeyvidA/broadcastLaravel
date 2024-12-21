@@ -1,7 +1,13 @@
 import { Calendar } from '@/components/ui/calendar';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.jsx';
 import { Head, useForm } from '@inertiajs/react';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import isToday from 'dayjs/plugin/isToday';
 import { useEffect, useState } from 'react';
+
+dayjs.extend(customParseFormat);
+dayjs.extend(isToday);
 
 const initialDailySlots = [
     { slot: '09:00:00' },
@@ -26,7 +32,7 @@ const initialDailySlots = [
 export default function Index({ appointmentDays }) {
     const { data, setData, post } = useForm({
         appointmentTime: '',
-        appointmentDate: new Date(),
+        appointmentDate: new Date(dayjs()),
     });
 
     const [dailySlots, setDailySlots] = useState(initialDailySlots);
@@ -38,27 +44,60 @@ export default function Index({ appointmentDays }) {
     useEffect(() => {
         const appointmentsInTheSelectedDay = [...appointmentDays].find(
             (appointment) => {
-                const appointmentDate = new Date(appointment.date)
-                    .toISOString()
-                    .split('T')[0];
-                const dataAppointmentDate = new Date(data.appointmentDate)
-                    .toISOString()
-                    .split('T')[0];
+                const appointmentDate = dayjs(appointment.date).startOf('day');
+                const dataAppointmentDate = dayjs(data.appointmentDate).startOf(
+                    'day',
+                );
 
-                return appointmentDate === dataAppointmentDate;
+                return appointmentDate.isSame(dataAppointmentDate);
             },
         );
 
         const selectedDaySlot = [...initialDailySlots].filter((slot) => {
+            const currentMinute = dayjs().minute();
+            const currentHour = dayjs().hour();
+            const validationForTodayHoursAlreadyPassed =
+                dayjs(slot.slot, 'HH:mm:ss').hour() < currentHour ||
+                (dayjs(slot.slot, 'HH:mm:ss').hour() === currentHour &&
+                    dayjs(slot.slot, 'HH:mm:ss').minute() < currentMinute);
+
             if (appointmentsInTheSelectedDay) {
-                return !appointmentsInTheSelectedDay.appointment.some(
-                    (appointment) => {
-                        return appointment.time === slot.slot;
-                    },
-                );
+                console.log('you', appointmentsInTheSelectedDay.appointment);
+
+                if (appointmentsInTheSelectedDay.appointment.length > 0) {
+                    return !appointmentsInTheSelectedDay.appointment.some(
+                        (appointment) => {
+                            if (
+                                dayjs(
+                                    appointmentsInTheSelectedDay.date,
+                                ).isToday() &&
+                                validationForTodayHoursAlreadyPassed
+                            ) {
+                                return true;
+                            }
+                            return appointment.time === slot.slot;
+                        },
+                    );
+                } else {
+                    if (
+                        dayjs(appointmentsInTheSelectedDay.date).isToday() &&
+                        validationForTodayHoursAlreadyPassed
+                    ) {
+                        return false;
+                    }
+
+                    return true;
+                }
             }
 
-            return slot;
+            if (
+                dayjs(data.appointmentDate).isToday() &&
+                validationForTodayHoursAlreadyPassed
+            ) {
+                return false;
+            }
+
+            return true;
         });
 
         setDailySlots(selectedDaySlot);
@@ -93,7 +132,7 @@ export default function Index({ appointmentDays }) {
                                     head_row: '',
                                     row: 'w-full mt-2',
                                 }}
-                                disabled={(date) => date < new Date()}
+                                fromDate={new Date()}
                             />
 
                             <div className="flex max-h-[500px] w-full flex-col gap-1 overflow-auto">
